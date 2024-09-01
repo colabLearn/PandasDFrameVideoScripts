@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[56]:
+# In[1]:
 
 
 # Import necessary libraries
@@ -9,7 +9,7 @@ import pandas as pd
 from scipy import stats
 
 
-# In[57]:
+# In[2]:
 
 
 # Assign GitHub link to data source variable
@@ -17,35 +17,35 @@ from scipy import stats
 gitRepo = 'https://github.com/colabLearn/PandasDFrameVideoScripts/raw/main/testData/Student_performance_data.csv'
 
 
-# In[58]:
+# In[3]:
 
 
 # Extract student data from the CSV file using the PyArrow engine for efficient datatype handling
 studentData = pd.read_csv(gitRepo, dtype_backend="pyarrow", engine="pyarrow")
 
 
-# In[59]:
+# In[4]:
 
 
 # View the first few rows of student data to understand its structure
 print(studentData.head())
 
 
-# In[60]:
+# In[5]:
 
 
 # Extract the 'GPA' column into a Pandas Series
 studentGPA = studentData['GPA']
 
 
-# In[61]:
+# In[6]:
 
 
 # View the GPA Series to check its contents
 print(studentGPA.head())
 
 
-# In[62]:
+# In[7]:
 
 
 # Calculate the 25th and 75th percentiles of the GPA data
@@ -53,35 +53,35 @@ gpa_25 = studentGPA.quantile(0.25)  # 25th percentile (lower quartile)
 gpa_75 = studentGPA.quantile(0.75)  # 75th percentile (upper quartile)
 
 
-# In[63]:
+# In[8]:
 
 
 # Create a mask for students whose GPA is below the 25th percentile
 mask_gpa_below_25 = studentGPA.lt(gpa_25)
 
 
-# In[64]:
+# In[9]:
 
 
 # View the mask to see which students fall below the 25th percentile
 print(mask_gpa_below_25.head())
 
 
-# In[65]:
+# In[10]:
 
 
 # Create a mask for students whose GPA is above the 75th percentile
 mask_gpa_above_75 = studentGPA.gt(gpa_75)
 
 
-# In[66]:
+# In[11]:
 
 
 # View the mask to see which students score above the 75th percentile
 print(mask_gpa_above_75.head())
 
 
-# In[67]:
+# In[12]:
 
 
 # Function to evaluate if there is a significant difference between two related datasets
@@ -99,7 +99,7 @@ def significant_diff(series1, series2):
     return pd.Series(result)
 
 
-# In[68]:
+# In[13]:
 
 
 # List of column headers of interest
@@ -109,7 +109,26 @@ headers_ = ['Age', 'Gender', 'Ethnicity', 'ParentalEducation',
             'Music', 'Volunteering']
 
 
-# In[69]:
+# In[14]:
+
+
+#Column the are categorical
+catData = ['Gender', 'Ethnicity', 'ParentalEducation','Tutoring',
+            'ParentalSupport', 'Extracurricular', 'Sports',
+            'Music', 'Volunteering']
+
+
+# In[15]:
+
+
+def get_column_series(data, col_header):
+    if col_header in catData:
+        return data[col_header].astype('category')
+    else:
+        return data[col_header]
+
+
+# In[16]:
 
 
 # Function to extract two Series for each column:
@@ -123,14 +142,14 @@ def extract_low_high_scorers(series_dict, high_score_mask, low_score_mask):
     return high_low_scorer_dict
 
 
-# In[70]:
+# In[17]:
 
 
 # Function to assess significant differences in student variables
 # between students who score below the 25th percentile and those who score above the 75th percentile
 def assess_significant_diff(dataframe, header_list, high_score_mask, low_score_mask):
     result_dict = {}
-    series_dict = get_column_series(dataframe, header_list)
+    series_dict =get_column_series(dataframe, header_list)
     high_low_scorer_dict = extract_low_high_scorers(series_dict, high_score_mask, low_score_mask)
     
     for col_name, high_low_tuple in high_low_scorer_dict.items():
@@ -140,14 +159,14 @@ def assess_significant_diff(dataframe, header_list, high_score_mask, low_score_m
     return result_dict
 
 
-# In[71]:
+# In[18]:
 
 
 # Get significant difference results for the student variables
 result = assess_significant_diff(studentData, headers_, mask_gpa_above_75, mask_gpa_below_25)
 
 
-# In[72]:
+# In[19]:
 
 
 # Print results
@@ -158,12 +177,12 @@ for col in headers_:
     print(result[col])
 
 
-# In[73]:
+# In[20]:
 
 
 # List variables that show a significant difference
 print("\nVariables with significant differences:")
-print("-----------------------------------------"
+print("-----------------------------------------")
 for col in headers_:
     if result[col]['P-Value'] < 0.05:
         print(col)
